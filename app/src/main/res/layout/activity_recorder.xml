@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".RecorderActivity">
+
+
+    <LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center_horizontal">
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Record"
+        android:textSize="20sp"
+        android:id="@+id/record"/>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Stop"
+        android:textSize="20sp"
+        android:id="@+id/stop"/>
+
+        <Space
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"/>
+        <com.gauravk.audiovisualizer.visualizer.BarVisualizer
+            android:id="@+id/bar"
+            xmlns:custom="http://schemas.android.com/apk/res-auto"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            custom:avDensity="1"
+            custom:avType="outline"
+            custom:avSpeed="normal"
+            custom:avWidth="1dp"
+            custom:avColor="@color/av_red"
+            />
+    </LinearLayout>
+</android.support.constraint.ConstraintLayout>

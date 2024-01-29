@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">SignalLab</string>
+    <string name="accButton">Accelerator Lab</string>
+    <string name="recButton">Sound Lab</string>
+    <string name="vidButton">Video Lab</string>
+    <string name="echoButton">Audio Echo Lab</string>
+    <string name="echo">Echo</string>
+   <string name="choose_voice_over">Choose voice-over</string>
+    <string name="button">Button</string>
+    <string name="record">Record</string>
+    <string name="decay">decay</string>
+    <string name="delay">delay</string>    
+    <string name="accStartButton">Start measure</string>
+    <string name="accStopButton">Stop measure</string>
+
+
+</resources>
