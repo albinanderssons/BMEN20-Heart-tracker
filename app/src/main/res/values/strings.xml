@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">SignalLab</string>
+    <string name="app_name">HeartTracker</string>
     <string name="accButton">Accelerator Lab</string>
     <string name="recButton">Sound Lab</string>
     <string name="vidButton">Video Lab</string>

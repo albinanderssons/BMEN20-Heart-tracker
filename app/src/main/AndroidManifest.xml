@@ -16,7 +16,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name="com.example.android.HeartTracker.MainActivity"
+        <activity android:name=".MainActivity"
             android:configChanges="orientation|keyboardHidden"
             android:screenOrientation="portrait">
             <intent-filter>
@@ -26,15 +26,15 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.example.android.HeartTracker.AccelerometerActivity"
+            android:name=".AccelerometerActivity"
             android:configChanges="orientation|keyboardHidden"
             android:screenOrientation="portrait" />
         <activity
-            android:name="com.example.android.HeartTracker.RecorderActivity"
+            android:name=".RecorderActivity"
             android:configChanges="orientation|keyboardHidden"
             android:screenOrientation="portrait" />
         <activity
-            android:name="com.example.android.HeartTracker.VideoActivity"
+            android:name=".VideoActivity"
             android:configChanges="orientation|keyboardHidden"
             android:screenOrientation="portrait" />
     </application>
