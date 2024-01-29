@@ -1,4 +1,4 @@
-package com.example.android.signallab;
+package com.example.android.HeartTracker;
 
 
 import android.content.Context;

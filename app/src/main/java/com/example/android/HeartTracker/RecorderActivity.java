@@ -1,4 +1,4 @@
-package com.example.android.signallab;
+package com.example.android.HeartTracker;
 
 import android.os.Bundle;
 import android.os.Environment;
@@ -8,7 +8,6 @@ import android.media.AudioManager;
 import android.media.AudioRecord;
 import android.media.AudioTrack;
 import android.media.MediaRecorder;
-import android.renderscript.Sampler;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;

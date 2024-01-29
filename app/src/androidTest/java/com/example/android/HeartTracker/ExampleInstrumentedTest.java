@@ -1,4 +1,4 @@
-package com.example.android.signallab;
+package com.example.android.HeartTracker;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("com.example.android.signallab", appContext.getPackageName());
+        assertEquals("com.example.android.HeartTracker", appContext.getPackageName());
     }
 }

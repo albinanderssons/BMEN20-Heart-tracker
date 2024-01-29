@@ -1,4 +1,4 @@
-package com.example.android.signallab;
+package com.example.android.HeartTracker;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -11,7 +11,6 @@ import android.view.SurfaceView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import java.io.IOException;
-import java.util.List;
 
 import static android.content.ContentValues.TAG;
 
