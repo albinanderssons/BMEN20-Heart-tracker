@@ -23,7 +23,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     private Bitmap mBitmap = null;
     private ImageView myCameraPreview;
     private int[] pixels = null;
-    public int width = 320, height = 240;
+    public int width ,height;
     private Camera.Parameters params;
 
     public CameraPreview(Context context, Camera camera, ImageView mCameraPreview, LinearLayout layout) {
@@ -31,15 +31,22 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         mCamera = camera;
         params = mCamera.getParameters();
         imageFormat = params.getPreviewFormat();
-        //Make sure that the preview size actually exists, and set it to our values
+
+        int minWidth = Integer.MAX_VALUE;
+        int minHeight = Integer.MAX_VALUE;
+
         for (Camera.Size previewSize: mCamera.getParameters().getSupportedPreviewSizes())
         {
-            System.out.println(previewSize.toString());
-            if(previewSize.width == 320 && previewSize.height == 240) {
-                params.setPreviewSize(previewSize.width, previewSize.height);
-                break;
+            if(previewSize.width < minWidth || previewSize.height < minHeight) {
+                minWidth= previewSize.width;
+                minHeight = previewSize.height;
             }
         }
+        params.setPreviewSize(minWidth, minHeight);
+        width = minWidth;
+        height = minHeight;
+        Log.d("ImageSize","width: " + width + " height: " + height);
+
         mCamera.setParameters(params);
         myCameraPreview = mCameraPreview;
         // Install a SurfaceHolder.Callback so we get notified when the
@@ -129,8 +136,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             byte[] data = datas[0];
             // I use the tempWidth and tempHeight because of the rotation of the image, if your
             // picture is horizontal, use width and height instead.
-            int tempWidth = 240;
-            int tempHeight = 320;
+            int tempWidth = height;
+            int tempHeight = width;
             // Here we decode the image to a RGB array.
             pixels = decodeYUV420SP(data, tempWidth, tempHeight);
             /*TODO here you're going to change pixel colors.*/
@@ -141,15 +148,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
                 g = (pixels[i] >> 8) & 0xff;
                 b = (pixels[i]) & 0xff;
 
-                r *= 1.5;
-                g *= 0.2;
-                b *= 0.5;
-                r = Math.min(255, Math.max(0, r));
-
-
                 pixels[i] = 0xff000000 | (r << 16) | (g << 8) | b;
             }
-
 
             mCamera.addCallbackBuffer(data);
             mProcessInProgress = false;
@@ -159,11 +159,10 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         @Override
         protected void onPostExecute(Boolean result){
             myCameraPreview.invalidate();
-            mBitmap.setPixels(pixels, 0, 240,0, 0, 240, 320);
+            mBitmap.setPixels(pixels, 0, height,0, 0, height, width);
             myCameraPreview.setImageBitmap(mBitmap);
         }
     }
-
 
     /*Decoding and rotating methods from github
     * This method rotates the NV21 image (standard image that comes from the preview)

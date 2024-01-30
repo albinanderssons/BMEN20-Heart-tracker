@@ -29,6 +29,8 @@ public class MeasuringActivity extends AppCompatActivity {
         // Add our camerapreview to this activitys layout.
         preview = (FrameLayout) findViewById(R.id.camera_preview);
         preview.addView(mPreview);
+        preview.setMinimumWidth(mPreview.width);
+        preview.setMinimumHeight(mPreview.height);
         //This is done to not show the real preview frame, and only our ImageView.
         preview.setVisibility(View.INVISIBLE);
 
