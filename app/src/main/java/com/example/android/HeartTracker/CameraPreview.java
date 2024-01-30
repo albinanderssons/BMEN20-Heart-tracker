@@ -147,6 +147,27 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             int sumB = 0;
 
             int r,g,b;
+
+            //Testing only considering upper half
+            int upperHalfHeight = tempHeight / 2;
+            for (int y = 0; y < upperHalfHeight; y++) {
+                for (int x = 0; x < tempWidth; x++) {
+                    int i = y * tempWidth + x;
+
+                    r = (pixels[i] >> 16) & 0xff;
+                    g = (pixels[i] >> 8) & 0xff;
+                    b = (pixels[i]) & 0xff;
+
+                    sumR += r;
+                    sumG += g;
+                    sumB += b;
+                }
+            }
+            int totalPixels = upperHalfHeight * tempWidth;
+
+
+
+/*
             for (int i = 0; i < pixels.length; i++) {
                 r = (pixels[i] >> 16) & 0xff;
                 g = (pixels[i] >> 8) & 0xff;
@@ -156,10 +177,12 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
                 sumG+=g;
                 sumB+=b;
 
-                pixels[i] = 0xff000000 | (r << 16) | (g << 8) | b;
+                //pixels[i] = 0xff000000 | (r << 16) | (g << 8) | b;
             }
-
-            Log.d("AverageRedFrame", sumR/pixels.length + " " + sumG/pixels.length + " " + sumB/pixels.length);
+*/
+            Log.i("pixel-length", String.valueOf(pixels.length));
+            Log.i("totalpixels", String.valueOf(totalPixels));
+            Log.i("AverageRedFrame", sumR/totalPixels + " " + sumG/totalPixels + " " + sumB/totalPixels);
 
             mCamera.addCallbackBuffer(data);
             mProcessInProgress = false;
