@@ -1,6 +1,9 @@
 package com.example.android.HeartTracker;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.hardware.Camera;
+import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -18,6 +21,7 @@ public class MeasuringActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_measure);
+
         // Make a image to put our converted preview frame.
         convertedImageView = new ImageView(this);
         // Get the mobiles camera and set it to our camera object.
