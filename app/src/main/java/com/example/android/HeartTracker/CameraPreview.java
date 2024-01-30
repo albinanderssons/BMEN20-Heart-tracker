@@ -141,7 +141,10 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             int tempHeight = width;
             // Here we decode the image to a RGB array.
             pixels = decodeYUV420SP(data, tempWidth, tempHeight);
-            /*TODO here you're going to change pixel colors.*/
+
+            int sumR = 0;
+            int sumG = 0;
+            int sumB = 0;
 
             int r,g,b;
             for (int i = 0; i < pixels.length; i++) {
@@ -149,8 +152,14 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
                 g = (pixels[i] >> 8) & 0xff;
                 b = (pixels[i]) & 0xff;
 
+                sumR+=r;
+                sumG+=g;
+                sumB+=b;
+
                 pixels[i] = 0xff000000 | (r << 16) | (g << 8) | b;
             }
+
+            Log.d("AverageRedFrame", sumR/pixels.length + " " + sumG/pixels.length + " " + sumB/pixels.length);
 
             mCamera.addCallbackBuffer(data);
             mProcessInProgress = false;
