@@ -8,7 +8,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
-public class VideoActivity extends AppCompatActivity {
+public class MeasuringActivity extends AppCompatActivity {
     Camera mCamera;
     CameraPreview mPreview;
     ImageView convertedImageView;
@@ -17,7 +17,7 @@ public class VideoActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_video);
+        setContentView(R.layout.activity_measure);
         // Make a image to put our converted preview frame.
         convertedImageView = new ImageView(this);
         // Get the mobiles camera and set it to our camera object.

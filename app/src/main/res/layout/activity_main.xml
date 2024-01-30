@@ -8,19 +8,9 @@
     android:gravity="center">
 
     <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/mAcceleratorButton"
-        android:text="Accelerometer Lab"/>
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/mRecorderButton"
-        android:text="Audio Lab"/>
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
         android:id="@+id/mVideoButton"
-        android:text="@string/vidButton"/>
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/measureButton" />
 
 </LinearLayout>

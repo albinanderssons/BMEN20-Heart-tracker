@@ -26,15 +26,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".AccelerometerActivity"
-            android:configChanges="orientation|keyboardHidden"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".RecorderActivity"
-            android:configChanges="orientation|keyboardHidden"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".VideoActivity"
+            android:name=".MeasuringActivity"
             android:configChanges="orientation|keyboardHidden"
             android:screenOrientation="portrait" />
     </application>

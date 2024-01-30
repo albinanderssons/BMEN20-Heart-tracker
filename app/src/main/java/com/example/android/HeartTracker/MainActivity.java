@@ -8,38 +8,19 @@ import android.view.View;
 import android.view.View.OnClickListener;
 
 public class MainActivity extends AppCompatActivity {
-    private Button accButton;
-    private Button recButton;
-    private Button vidButton;
+    private Button measureButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        accButton = findViewById(R.id.mAcceleratorButton);
-        recButton = findViewById(R.id.mRecorderButton);
-        vidButton = findViewById(R.id.mVideoButton);
-        accButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent startAccActivityIntent = new Intent(MainActivity.this,
-                        AccelerometerActivity.class);
-                startActivity(startAccActivityIntent);
-            }
-        });
-        recButton.setOnClickListener(new OnClickListener() {
+        measureButton = findViewById(R.id.mVideoButton);
+
+        measureButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent startRecordActivityIntent = new Intent(MainActivity.this,
-                        RecorderActivity.class);
-                startActivity(startRecordActivityIntent);
-            }
-        });
-        vidButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent startRecordActivityIntent = new Intent(MainActivity.this,
-                        VideoActivity.class);
+                        MeasuringActivity.class);
                 startActivity(startRecordActivityIntent);
             }
         });
