@@ -5,12 +5,20 @@ import android.graphics.Bitmap;
 import android.graphics.ImageFormat;
 import android.hardware.Camera;
 import android.os.AsyncTask;
+import android.os.Environment;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import static android.content.ContentValues.TAG;
 
@@ -25,6 +33,10 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     private int[] pixels = null;
     public int width ,height;
     private Camera.Parameters params;
+
+    private List<Integer> redAVGs;
+
+    private static final String DataFile = "RedAVGs.txt";
 
     public CameraPreview(Context context, Camera camera, ImageView mCameraPreview, LinearLayout layout) {
         super(context);
@@ -58,6 +70,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
         layout.addView(myCameraPreview);
 
+        redAVGs = new ArrayList<Integer>();
     }
 
     public void surfaceCreated(SurfaceHolder holder) {
@@ -139,12 +152,11 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             // picture is horizontal, use width and height instead.
             int tempWidth = height;
             int tempHeight = width;
+
             // Here we decode the image to a RGB array.
             pixels = decodeYUV420SP(data, tempWidth, tempHeight);
 
             int sumR = 0;
-            int sumG = 0;
-            int sumB = 0;
 
             int r,g,b;
 
@@ -159,14 +171,11 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
                     b = (pixels[i]) & 0xff;
 
                     sumR += r;
-                    sumG += g;
-                    sumB += b;
+
+                    pixels[i] = 0xff000000 | (b << 16) | (g << 8) | r;
                 }
             }
             int totalPixels = upperHalfHeight * tempWidth;
-
-
-
 /*
             for (int i = 0; i < pixels.length; i++) {
                 r = (pixels[i] >> 16) & 0xff;
@@ -180,9 +189,11 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
                 //pixels[i] = 0xff000000 | (r << 16) | (g << 8) | b;
             }
 */
-            Log.i("pixel-length", String.valueOf(pixels.length));
-            Log.i("totalpixels", String.valueOf(totalPixels));
-            Log.i("AverageRedFrame", sumR/totalPixels + " " + sumG/totalPixels + " " + sumB/totalPixels);
+            //Log.i("pixel-length", String.valueOf(pixels.length));
+            //Log.i("totalpixels", String.valueOf(totalPixels));
+            //Log.i("AverageRedFrame", );
+
+            redAVGs.add(sumR/totalPixels);
 
             mCamera.addCallbackBuffer(data);
             mProcessInProgress = false;
@@ -194,6 +205,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             myCameraPreview.invalidate();
             mBitmap.setPixels(pixels, 0, height,0, 0, height, width);
             myCameraPreview.setImageBitmap(mBitmap);
+            save(DataFile, redAVGs);
         }
     }
 
@@ -261,6 +273,44 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             }
         }
         return rgb;
+    }
+
+    private void save(String FILE_NAME, List<Integer> data) {
+        String state = Environment.getExternalStorageState();
+        if (!Environment.MEDIA_MOUNTED.equals(state)) {
+            return;
+        }
+        File file = new File(Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_DOWNLOADS), FILE_NAME);
+
+        DataOutputStream fos = null;
+
+        try {
+            file.createNewFile();
+            fos = new DataOutputStream(new FileOutputStream(file, true));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return;
+        }
+
+        for (int i = 0; i < data.size(); i++) {
+            //String textData = String.valueOf(Data[i]) + "\n";
+
+            try {
+                //fos.write(textData.getBytes()); //The vector is saved in a txt-file on the device
+                fos.write(data.get(i));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        try {
+            fos.close();
+            Log.i("New file saved", "Now");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
 }
