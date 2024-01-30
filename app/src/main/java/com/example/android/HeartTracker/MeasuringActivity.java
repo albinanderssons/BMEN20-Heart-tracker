@@ -46,7 +46,6 @@ public class MeasuringActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        /*
         if (mCamera != null) {
             // Call stopPreview() to stop updating the preview surface.
             mCamera.stopPreview();
@@ -59,7 +58,6 @@ public class MeasuringActivity extends AppCompatActivity {
             mCamera = null;
         }
         mPreview = null;
-        */
     }
     // This is connected to the lifecycle of the activity
     @Override

@@ -43,6 +43,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             }
         }
         params.setPreviewSize(minWidth, minHeight);
+        params.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
         width = minWidth;
         height = minHeight;
         Log.d("ImageSize","width: " + width + " height: " + height);
@@ -229,6 +230,5 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         }
         return rgb;
     }
-
 
 }
