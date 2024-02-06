@@ -38,10 +38,13 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     public int width ,height;
     private Camera.Parameters params;
 
-    private List<Integer> redAVGs;
+    private long startTime;
 
-    private static final String DataFile = "RedAVGs.txt";
+    private List<Integer> redAVGs;
+    private List<Double> timeStamps;
+
     private TextView avgText;
+
 
     public CameraPreview(Context context, Camera camera, ImageView mCameraPreview, LinearLayout layout, TextView avgText) {
         super(context);
@@ -76,6 +79,9 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         layout.addView(myCameraPreview);
 
         redAVGs = new ArrayList<Integer>();
+        timeStamps = new ArrayList<Double>();
+        startTime = System.currentTimeMillis();
+
         this.avgText = avgText;
     }
 
@@ -200,14 +206,14 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             //Log.i("pixel-length", String.valueOf(pixels.length));
             //Log.i("totalpixels", String.valueOf(totalPixels));
             //Log.i("AverageRedFrame", );
-            int temp = sumR/totalPixels;
-            redAVGs.add(temp);
+            int redAvg = sumR/totalPixels;
+            long timeNow = System.currentTimeMillis();
+            double timestamp = (timeNow-startTime)/1000d;
 
-            saveAsText("average_red_values.txt", Integer.parseInt(String.valueOf(temp)));
+            redAVGs.add(redAvg);
+            timeStamps.add(timestamp);
 
-
-
-
+            saveAsText("average_red_values.txt", redAvg + " " + timestamp);
 
             mCamera.addCallbackBuffer(data);
             mProcessInProgress = false;
@@ -290,7 +296,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         return rgb;
     }
 
-    private void saveAsText(String fileName, int averageRedValue) {
+    private void saveAsText(String fileName, String averageRedValue) {
         String state = Environment.getExternalStorageState();
         if (!Environment.MEDIA_MOUNTED.equals(state)) {
             // External storage is not available
@@ -305,7 +311,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
              PrintWriter out = new PrintWriter(bw)) {
 
             // Write the average red value as a string
-            out.println(String.valueOf(averageRedValue));
+            out.println(averageRedValue);
 
             Log.i("File saved", "Now");
 
