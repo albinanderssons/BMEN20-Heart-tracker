@@ -162,8 +162,10 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
             //Testing only considering upper half
             int upperHalfHeight = tempHeight / 2;
+            int leftHalfWidth = tempWidth / 2;
+
             for (int y = 0; y < upperHalfHeight; y++) {
-                for (int x = 0; x < tempWidth; x++) {
+                for (int x = 0; x < leftHalfWidth; x++) {
                     int i = y * tempWidth + x;
 
                     r = (pixels[i] >> 16) & 0xff;
@@ -306,7 +308,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         }
         try {
             fos.close();
-            Log.i("New file saved", "Now");
+            //Log.i("New file saved", "Now");
         } catch (IOException e) {
             e.printStackTrace();
         }
