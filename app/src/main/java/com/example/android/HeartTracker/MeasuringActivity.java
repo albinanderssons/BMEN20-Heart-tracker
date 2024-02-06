@@ -1,9 +1,6 @@
 package com.example.android.HeartTracker;
 
-import android.Manifest;
-import android.content.pm.PackageManager;
 import android.hardware.Camera;
-import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -11,6 +8,7 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 public class MeasuringActivity extends AppCompatActivity {
     Camera mCamera;
@@ -18,6 +16,8 @@ public class MeasuringActivity extends AppCompatActivity {
     ImageView convertedImageView;
     LinearLayout layoutForImage;
     FrameLayout preview;
+
+    TextView avgText;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -30,7 +30,8 @@ public class MeasuringActivity extends AppCompatActivity {
         // Create a layout to put our image.
         layoutForImage = findViewById(R.id.ll);
         // Creates our own camera preview object to  be able to make changes to the previews.
-        mPreview = new CameraPreview(this, mCamera, convertedImageView,layoutForImage);
+        avgText = findViewById(R.id.avgtext);
+        mPreview = new CameraPreview(this, mCamera, convertedImageView,layoutForImage,avgText);
         // Add our camerapreview to this activitys layout.
         preview = (FrameLayout) findViewById(R.id.camera_preview);
         preview.addView(mPreview);

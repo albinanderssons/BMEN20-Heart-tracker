@@ -11,6 +11,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import java.io.BufferedWriter;
 import java.io.DataOutputStream;
@@ -40,8 +41,9 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     private List<Integer> redAVGs;
 
     private static final String DataFile = "RedAVGs.txt";
+    private TextView avgText;
 
-    public CameraPreview(Context context, Camera camera, ImageView mCameraPreview, LinearLayout layout) {
+    public CameraPreview(Context context, Camera camera, ImageView mCameraPreview, LinearLayout layout, TextView avgText) {
         super(context);
         mCamera = camera;
         params = mCamera.getParameters();
@@ -74,6 +76,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         layout.addView(myCameraPreview);
 
         redAVGs = new ArrayList<Integer>();
+        this.avgText = avgText;
     }
 
     public void surfaceCreated(SurfaceHolder holder) {
@@ -205,6 +208,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
 
 
+
             mCamera.addCallbackBuffer(data);
             mProcessInProgress = false;
             return true;
@@ -215,6 +219,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             myCameraPreview.invalidate();
             mBitmap.setPixels(pixels, 0, height,0, 0, height, width);
             myCameraPreview.setImageBitmap(mBitmap);
+            avgText.setText(String.valueOf(redAVGs.get(redAVGs.size() - 1)));
+            //save(DataFile, redAVGs);
         }
     }
 
