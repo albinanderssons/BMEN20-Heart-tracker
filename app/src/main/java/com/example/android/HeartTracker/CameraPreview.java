@@ -40,7 +40,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
     private long startTime;
 
-    private List<Integer> redAVGs;
+    private List<Double> redAVGs;
     private List<Double> timeStamps;
 
     private TextView avgText;
@@ -78,7 +78,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
         layout.addView(myCameraPreview);
 
-        redAVGs = new ArrayList<Integer>();
+        redAVGs = new ArrayList<Double>();
         timeStamps = new ArrayList<Double>();
         startTime = System.currentTimeMillis();
 
@@ -189,7 +189,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
                     pixels[i] = 0xff000000 | (r << 16) | (g << 8) | b;
                 }
             }
-            int totalPixels = upperHalfHeight * tempWidth;
+            double totalPixels = upperHalfHeight * tempWidth;
 /*
             for (int i = 0; i < pixels.length; i++) {
                 r = (pixels[i] >> 16) & 0xff;
@@ -206,7 +206,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             //Log.i("pixel-length", String.valueOf(pixels.length));
             //Log.i("totalpixels", String.valueOf(totalPixels));
             //Log.i("AverageRedFrame", );
-            int redAvg = sumR/totalPixels;
+            double redAvg = sumR/totalPixels;
             long timeNow = System.currentTimeMillis();
             double timestamp = (timeNow-startTime)/1000d;
 
