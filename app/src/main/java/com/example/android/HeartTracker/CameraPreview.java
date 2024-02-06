@@ -12,10 +12,13 @@ import android.view.SurfaceView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
+import java.io.BufferedWriter;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -174,7 +177,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
                     sumR += r;
 
-                    pixels[i] = 0xff000000 | (b << 16) | (g << 8) | r;
+                    pixels[i] = 0xff000000 | (r << 16) | (g << 8) | b;
                 }
             }
             int totalPixels = upperHalfHeight * tempWidth;
@@ -194,8 +197,13 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             //Log.i("pixel-length", String.valueOf(pixels.length));
             //Log.i("totalpixels", String.valueOf(totalPixels));
             //Log.i("AverageRedFrame", );
+            int temp = sumR/totalPixels;
+            redAVGs.add(temp);
 
-            redAVGs.add(sumR/totalPixels);
+            saveAsText("average_red_values.txt", Integer.parseInt(String.valueOf(temp)));
+
+
+
 
             mCamera.addCallbackBuffer(data);
             mProcessInProgress = false;
@@ -207,7 +215,6 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             myCameraPreview.invalidate();
             mBitmap.setPixels(pixels, 0, height,0, 0, height, width);
             myCameraPreview.setImageBitmap(mBitmap);
-            save(DataFile, redAVGs);
         }
     }
 
@@ -277,42 +284,29 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         return rgb;
     }
 
-    private void save(String FILE_NAME, List<Integer> data) {
+    private void saveAsText(String fileName, int averageRedValue) {
         String state = Environment.getExternalStorageState();
         if (!Environment.MEDIA_MOUNTED.equals(state)) {
+            // External storage is not available
             return;
         }
+
         File file = new File(Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_DOWNLOADS), FILE_NAME);
+                Environment.DIRECTORY_DOWNLOADS), fileName);
 
-        DataOutputStream fos = null;
+        try (FileWriter writer = new FileWriter(file, true);
+             BufferedWriter bw = new BufferedWriter(writer);
+             PrintWriter out = new PrintWriter(bw)) {
 
-        try {
-            file.createNewFile();
-            fos = new DataOutputStream(new FileOutputStream(file, true));
+            // Write the average red value as a string
+            out.println(String.valueOf(averageRedValue));
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            return;
-        }
+            Log.i("File saved", "Now");
 
-        for (int i = 0; i < data.size(); i++) {
-            //String textData = String.valueOf(Data[i]) + "\n";
-
-            try {
-                //fos.write(textData.getBytes()); //The vector is saved in a txt-file on the device
-                fos.write(data.get(i));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        try {
-            fos.close();
-            //Log.i("New file saved", "Now");
         } catch (IOException e) {
             e.printStackTrace();
+            Log.e("Error saving file", e.getMessage());
         }
-
     }
 
 }
