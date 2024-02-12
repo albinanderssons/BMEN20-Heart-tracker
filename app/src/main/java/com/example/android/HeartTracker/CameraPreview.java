@@ -315,7 +315,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         File file = new File(Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_DOWNLOADS), fileName);
 
-        try (FileWriter writer = new FileWriter(file, true);
+        try (FileWriter writer = new FileWriter(file,false);
              BufferedWriter bw = new BufferedWriter(writer);
              PrintWriter out = new PrintWriter(bw)) {
 
@@ -339,19 +339,15 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
         DoubleFft1d fft = new DoubleFft1d(size);
         fft.realForward(output);
+        StringBuilder log = new StringBuilder();
 
         for(int i = 0; i < 2 * size; i++) {
             output[i] = Math.abs(output[i]);
-
-            /*
-            if(i <= 200 && i >= 45 && max_amp < output[i]){
-                max_amp = output[i];
-                max_freq = i;
-            }
-             */
-
-            saveAsText("fft.txt",String.valueOf(output[i]));
+            log.append(output[i]);
+            log.append("\n");
         }
+
+        saveAsText("fft.txt", log.toString());
 
         for(int i = 45; i < size; i++){
             if(max_amp < output[i]){
