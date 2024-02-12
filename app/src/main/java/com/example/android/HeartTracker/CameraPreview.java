@@ -9,6 +9,7 @@ import android.os.Environment;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -44,9 +45,10 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     private List<Double> timeStamps;
 
     private TextView avgText;
+    private TextView measuring_time;
+    private Button btnStop;
 
-
-    public CameraPreview(Context context, Camera camera, ImageView mCameraPreview, LinearLayout layout, TextView avgText) {
+    public CameraPreview(Context context, Camera camera, ImageView mCameraPreview, LinearLayout layout, TextView avgText, TextView measuring_time) {
         super(context);
         mCamera = camera;
         params = mCamera.getParameters();
@@ -83,6 +85,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         startTime = System.currentTimeMillis();
 
         this.avgText = avgText;
+        this.measuring_time = measuring_time;
     }
 
     public void surfaceCreated(SurfaceHolder holder) {
@@ -98,7 +101,14 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
     public void surfaceDestroyed(SurfaceHolder holder) {
         // empty. Taken care of in our activity.
+        if (mCamera != null) {
+            mCamera.stopPreview();
+            mCamera.setPreviewCallback(null);  // Remove the callback to prevent further updates
+            mCamera.release();
+            mCamera = null;
+        }
     }
+
     /* If the application is allowed to rotate, here is where you would change the camera preview
     * size and other formatting changes.*/
     public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {
@@ -226,6 +236,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             mBitmap.setPixels(pixels, 0, height,0, 0, height, width);
             myCameraPreview.setImageBitmap(mBitmap);
             avgText.setText(String.valueOf(redAVGs.get(redAVGs.size() - 1)));
+            measuring_time.setText(String.valueOf(timeStamps.get(timeStamps.size()-1)));
+
             //save(DataFile, redAVGs);
         }
     }

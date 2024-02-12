@@ -1,10 +1,12 @@
 package com.example.android.HeartTracker;
 
+import android.content.Intent;
 import android.hardware.Camera;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -18,6 +20,7 @@ public class MeasuringActivity extends AppCompatActivity {
     FrameLayout preview;
 
     TextView avgText;
+    TextView measuring_time;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -31,8 +34,14 @@ public class MeasuringActivity extends AppCompatActivity {
         layoutForImage = findViewById(R.id.ll);
         // Creates our own camera preview object to  be able to make changes to the previews.
         avgText = findViewById(R.id.avgtext);
-        mPreview = new CameraPreview(this, mCamera, convertedImageView,layoutForImage,avgText);
+        measuring_time = findViewById(R.id.measuring_time);
+        mPreview = new CameraPreview(this, mCamera, convertedImageView,layoutForImage,avgText, measuring_time);
         // Add our camerapreview to this activitys layout.
+        Button btnStop = findViewById(R.id.btnStop);
+        btnStop.setOnClickListener(view -> {
+            onPause();
+            stopMeasurement();
+        });
         preview = (FrameLayout) findViewById(R.id.camera_preview);
         preview.addView(mPreview);
         preview.setMinimumWidth(mPreview.width);
@@ -43,6 +52,12 @@ public class MeasuringActivity extends AppCompatActivity {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
+    private void stopMeasurement(){
+        Intent intent = new Intent(MeasuringActivity.this, MainActivity.class);
+        startActivity(intent);
+        finish();
+    }
+
 
 
     // This is connected to the lifecycle of the activity
@@ -51,15 +66,12 @@ public class MeasuringActivity extends AppCompatActivity {
         super.onPause();
         if (mCamera != null) {
             // Call stopPreview() to stop updating the preview surface.
-            mCamera.stopPreview();
-
-            // Important: Call release() to release the camera for use by other
-            // applications. Applications should release the camera immediately
-            // during onPause() and re-open() it during onResume()).
-            mCamera.release();
-
-            mCamera = null;
+            mCamera.setPreviewCallback(null);
+            //mCamera.stopPreview();
+            //mCamera.release();
+            //mCamera = null;
         }
+
         mPreview = null;
     }
     // This is connected to the lifecycle of the activity
