@@ -232,7 +232,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
             if(timestamp >= MEASURE_TIME){
                 double bpm = fft(redAVGs.toArray(new Double[0]),framesCounter,samplingFeq);
-                Log.i("BPM", String.valueOf(bpm));
+                Log.i("BPM", String.valueOf(Math.ceil(bpm*60)));
                 isrunning = false;
             }
             //save(DataFile, redAVGs);
@@ -341,11 +341,11 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         fft.realForward(output);
 
         for(int i = 0; i < 2 * size; i++) {
-            if(output[i] <= 200 && output[i] >= 45 && max_amp < output[i]){
-                    max_amp = output[i];
-                    max_freq = i;
-            }
             output[i] = Math.abs(output[i]);
+            if(i <= 200 && i >= 45 && max_amp < output[i]){
+                max_amp = output[i];
+                max_freq = i;
+            }
             saveAsText("fft.txt",String.valueOf(output[i]));
         }
         return max_freq * sf / (2*size);
