@@ -231,7 +231,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             measuring_time.setText(String.valueOf(timeStamps.get(timeStamps.size()-1)));
 
             if(timestamp >= MEASURE_TIME){
-                fft(redAVGs.toArray(new Double[0]),framesCounter,samplingFeq);
+                double bpm = fft(redAVGs.toArray(new Double[0]),framesCounter,samplingFeq);
+                Log.i("BPM", String.valueOf(bpm));
                 isrunning = false;
             }
             //save(DataFile, redAVGs);
@@ -329,8 +330,10 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         }
     }
 
-    private void fft(Double[] input, int size, double sf){
+    private double fft(Double[] input, int size, double sf){
         double[] output = new double[2*size];
+        double max_amp = 0;
+        double max_freq = 0;
 
         for(int i = 0; i < size; i++)output[i] = input[i];
 
@@ -338,9 +341,13 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         fft.realForward(output);
 
         for(int i = 0; i < 2 * size; i++) {
+            if(output[i] <= 200 && output[i] >= 45 && max_amp < output[i]){
+                    max_amp = output[i];
+                    max_freq = i;
+            }
             output[i] = Math.abs(output[i]);
             saveAsText("fft.txt",String.valueOf(output[i]));
         }
-
+        return max_freq * sf / (2*size);
     }
 }
