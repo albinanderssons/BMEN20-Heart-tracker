@@ -52,10 +52,10 @@ public class MeasuringActivity extends AppCompatActivity {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
-    private void stopMeasurement(){
+    public void stopMeasurement(){
+        finish();
         Intent intent = new Intent(MeasuringActivity.this, MainActivity.class);
         startActivity(intent);
-        finish();
     }
 
 
@@ -66,10 +66,10 @@ public class MeasuringActivity extends AppCompatActivity {
         super.onPause();
         if (mCamera != null) {
             // Call stopPreview() to stop updating the preview surface.
+            mCamera.stopPreview();
             mCamera.setPreviewCallback(null);
-            //mCamera.stopPreview();
-            //mCamera.release();
-            //mCamera = null;
+            mCamera.release();
+            mCamera = null;
         }
 
         mPreview = null;

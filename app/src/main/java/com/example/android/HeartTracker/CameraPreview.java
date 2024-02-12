@@ -15,14 +15,11 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.io.BufferedWriter;
-import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static android.content.ContentValues.TAG;
@@ -48,6 +45,14 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     private TextView measuring_time;
     private Button btnStop;
 
+    private int framesCounter;
+
+    private boolean isrunning;
+    private double samplingFeq;
+    private double timestamp;
+
+    private static int MEASURE_TIME = 30;
+
     public CameraPreview(Context context, Camera camera, ImageView mCameraPreview, LinearLayout layout, TextView avgText, TextView measuring_time) {
         super(context);
         mCamera = camera;
@@ -68,7 +73,6 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         params.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
         width = minWidth;
         height = minHeight;
-        Log.d("ImageSize","width: " + width + " height: " + height);
 
         mCamera.setParameters(params);
         myCameraPreview = mCameraPreview;
@@ -86,6 +90,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
         this.avgText = avgText;
         this.measuring_time = measuring_time;
+        framesCounter = 0;
+        isrunning = true;
     }
 
     public void surfaceCreated(SurfaceHolder holder) {
@@ -100,13 +106,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     }
 
     public void surfaceDestroyed(SurfaceHolder holder) {
-        // empty. Taken care of in our activity.
-        if (mCamera != null) {
-            mCamera.stopPreview();
-            mCamera.setPreviewCallback(null);  // Remove the callback to prevent further updates
-            mCamera.release();
-            mCamera = null;
-        }
+
     }
 
     /* If the application is allowed to rotate, here is where you would change the camera preview
@@ -133,7 +133,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     * */
     @Override
     public void onPreviewFrame(byte[] bytes, Camera camera) {
-        if (imageFormat == ImageFormat.NV21){
+        if (imageFormat == ImageFormat.NV21 && isrunning){
             if(mProcessInProgress){
                 mCamera.addCallbackBuffer(bytes);
             }
@@ -200,30 +200,22 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
                 }
             }
             double totalPixels = upperHalfHeight * tempWidth;
-/*
-            for (int i = 0; i < pixels.length; i++) {
-                r = (pixels[i] >> 16) & 0xff;
-                g = (pixels[i] >> 8) & 0xff;
-                b = (pixels[i]) & 0xff;
 
-                sumR+=r;
-                sumG+=g;
-                sumB+=b;
-
-                //pixels[i] = 0xff000000 | (r << 16) | (g << 8) | b;
-            }
-*/
             //Log.i("pixel-length", String.valueOf(pixels.length));
             //Log.i("totalpixels", String.valueOf(totalPixels));
             //Log.i("AverageRedFrame", );
+
             double redAvg = sumR/totalPixels;
-            long timeNow = System.currentTimeMillis();
-            double timestamp = (timeNow-startTime)/1000d;
+            double timeNow = System.currentTimeMillis();
+            timestamp = (timeNow-startTime)/1000d;
 
             redAVGs.add(redAvg);
             timeStamps.add(timestamp);
+            framesCounter++;
 
-            saveAsText("average_red_values.txt", redAvg + " " + timestamp);
+            samplingFeq = framesCounter/timestamp;
+
+            //saveAsText("average_red_values.txt", redAvg + " " + timestamp);
 
             mCamera.addCallbackBuffer(data);
             mProcessInProgress = false;
@@ -238,6 +230,10 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             avgText.setText(String.valueOf(redAVGs.get(redAVGs.size() - 1)));
             measuring_time.setText(String.valueOf(timeStamps.get(timeStamps.size()-1)));
 
+            if(timestamp >= MEASURE_TIME){
+                fft(redAVGs.toArray(new Double[0]),framesCounter,samplingFeq);
+                isrunning = false;
+            }
             //save(DataFile, redAVGs);
         }
     }
@@ -333,4 +329,18 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         }
     }
 
+    private void fft(Double[] input, int size, double sf){
+        double[] output = new double[2*size];
+
+        for(int i = 0; i < size; i++)output[i] = input[i];
+
+        DoubleFft1d fft = new DoubleFft1d(size);
+        fft.realForward(output);
+
+        for(int i = 0; i < 2 * size; i++) {
+            output[i] = Math.abs(output[i]);
+            saveAsText("fft.txt",String.valueOf(output[i]));
+        }
+
+    }
 }
