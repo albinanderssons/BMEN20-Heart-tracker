@@ -227,13 +227,15 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             myCameraPreview.invalidate();
             mBitmap.setPixels(pixels, 0, height,0, 0, height, width);
             myCameraPreview.setImageBitmap(mBitmap);
-            avgText.setText(String.valueOf(redAVGs.get(redAVGs.size() - 1)));
-            measuring_time.setText(String.valueOf(timeStamps.get(timeStamps.size()-1)));
 
             if(timestamp >= MEASURE_TIME){
-                double bpm = fft(redAVGs.toArray(new Double[0]),framesCounter,samplingFeq);
-                Log.i("BPM", String.valueOf(Math.ceil(bpm*60)));
+                double bpm = Math.ceil(fft(redAVGs.toArray(new Double[0]),framesCounter,samplingFeq)*60);
+                Log.i("BPM", String.valueOf(bpm));
+                avgText.setText(String.valueOf(bpm));
                 isrunning = false;
+            }else{
+                avgText.setText(String.valueOf(redAVGs.get(redAVGs.size() - 1)));
+                measuring_time.setText(String.valueOf(timeStamps.get(timeStamps.size()-1)));
             }
             //save(DataFile, redAVGs);
         }
