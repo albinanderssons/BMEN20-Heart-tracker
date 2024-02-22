@@ -3,4 +3,11 @@
     <color name="colorPrimary">#008577</color>
     <color name="colorPrimaryDark">#00574B</color>
     <color name="colorAccent">#D81B60</color>
+    <color name="redBackround">#8B0000</color>
+    <color name="darkred">#7A261B</color>
+    <color name="reallydarkred">#521912</color>
+    <color name="lightred">#F04C35</color>
+    <color name= "copperred">#CC3F2D</color>
+    <color name="white">#FFFAF0</color>
+    <color name="black">#000000</color>
 </resources>
