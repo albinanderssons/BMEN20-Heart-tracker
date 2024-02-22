@@ -2,11 +2,8 @@
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
         <!-- Customize your theme here. -->
-        <item name="colorPrimary">@color/white</item>
-        <item name="colorPrimaryDark">@color/darkred</item>
-        <item name="colorAccent">@color/reallydarkred</item>
-        <item name="buttonStyle">@style/Widget.AppCompat.Button.Colored</item>
-        <vector name="monitor_heart" type="drawable">@android:drawable/monitor_heart</vector>
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
     </style>
-
 </resources>

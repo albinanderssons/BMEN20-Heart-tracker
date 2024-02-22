@@ -220,8 +220,6 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             mCamera.addCallbackBuffer(data);
             mProcessInProgress = false;
             return true;
-
-
         }
 
         @Override
@@ -240,10 +238,6 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
                 measuring_time.setText(String.valueOf(timeStamps.get(timeStamps.size()-1)));
             }
             //save(DataFile, redAVGs);
-            
-            //bandpass filter
-            //double filteredRedAvg = bandpassFilter.filter(redAvg);
-
         }
     }
 

@@ -1,6 +1,4 @@
 <resources>
     <string name="app_name">HeartTracker</string>
     <string name="measureButton">Start Measuring</string>
-    <string name="header">Heart Tracker</string>
-    <string name="monitorheart">Heart Monitor Symbol</string>
 </resources>
