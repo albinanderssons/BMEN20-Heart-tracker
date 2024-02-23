@@ -215,8 +215,6 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
             samplingFeq = Math.ceil(framesCounter/timestamp);
 
-            //saveAsText("average_red_values.txt", redAvg + " " + timestamp);
-
             mCamera.addCallbackBuffer(data);
             mProcessInProgress = false;
             return true;
@@ -229,15 +227,29 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             myCameraPreview.setImageBitmap(mBitmap);
 
             if(timestamp >= MEASURE_TIME){
-                double bpm = Math.ceil(fft(redAVGs.toArray(new Double[0]),framesCounter,samplingFeq)*60);
+                double avgDeltaT = 0;
+                for(int i = 0; i < timeStamps.size()-1;i++){
+                    avgDeltaT += timeStamps.get(i+1)-timeStamps.get(i);
+                }
+                avgDeltaT/= (timeStamps.size()-1);
+
+                double bpm = fft(redAVGs.toArray(new Double[0]),framesCounter,avgDeltaT)*60;
                 Log.i("BPM", String.valueOf(bpm));
                 avgText.setText(String.valueOf(bpm));
                 isrunning = false;
+
+                //print out data to file
+                StringBuilder s = new StringBuilder();
+                for(int i = 0; i < framesCounter; i++){
+                    s.append(redAVGs.get(i) + " " + timeStamps.get(i) + "\n");
+                }
+                saveAsText("average_red_values.txt", s.toString());
             }else{
                 avgText.setText(String.valueOf(redAVGs.get(redAVGs.size() - 1)));
                 measuring_time.setText(String.valueOf(timeStamps.get(timeStamps.size()-1)));
             }
-            //save(DataFile, redAVGs);
+            //bandpass filter
+            //double filteredRedAvg = bandpassFilter.filter(redAvg);
         }
     }
 
@@ -332,7 +344,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         }
     }
 
-    private double fft(Double[] input, int size, double sf){
+    private double fft(Double[] input, int size, double avgDeltaT){
         double[] output = new double[2*size];
         double max_amp = 0;
         double max_freq = 0;
@@ -344,19 +356,20 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         StringBuilder log = new StringBuilder();
 
         for(int i = 0; i < 2 * size; i++) {
-            output[i] = Math.abs(output[i]);
+            output[i] = Math.pow(Math.abs(output[i]),2);
+
             log.append(output[i]);
             log.append("\n");
-        }
 
-        saveAsText("fft.txt", log.toString());
-
-        for(int i = 45; i < size; i++){
-            if(max_amp < output[i]){
-                max_amp = output[i];
-                max_freq = i;
+            double curr_freq = (double) i / ((double) avgDeltaT * ((2*size) -1 ));
+            if(curr_freq >= 0.75 && curr_freq <= 10/3d){
+                if(max_amp < output[i]){
+                    max_amp = output[i];
+                    max_freq = curr_freq;
+                }
             }
         }
-        return max_freq * sf / (2*size);
+        saveAsText("fft.txt", log.toString());
+        return max_freq;
     }
 }
