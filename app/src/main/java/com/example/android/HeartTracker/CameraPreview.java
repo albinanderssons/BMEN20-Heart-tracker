@@ -3,6 +3,7 @@ package com.example.android.HeartTracker;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.ImageFormat;
 import android.hardware.Camera;
 import android.os.AsyncTask;
@@ -26,6 +27,10 @@ import java.util.List;
 
 import static android.content.ContentValues.TAG;
 
+import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.series.DataPoint;
+import com.jjoe64.graphview.series.LineGraphSeries;
+
 /** A basic Camera preview class */
 public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback, Camera.PreviewCallback {
     private SurfaceHolder mHolder;
@@ -44,10 +49,11 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     private List<Double> smoothedAvgs;
     private List<Double> timeStamps;
 
+    private GraphView graph;
     private TextView avgText;
     private TextView measuring_time;
     private Button btnStop;
-
+    LineGraphSeries<DataPoint> plotRedAvg;
     private int framesCounter;
 
     private boolean isrunning;
@@ -59,7 +65,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     private static String start_measuring = "Starting Measurement...";
     private AppCompatActivity parent;
 
-    public CameraPreview(Context context, Camera camera, ImageView mCameraPreview, LinearLayout layout, TextView avgText, TextView measuring_time, AppCompatActivity parent) {
+    public CameraPreview(Context context, Camera camera, ImageView mCameraPreview, LinearLayout layout, TextView avgText, TextView measuring_time, GraphView graph,AppCompatActivity parent) {
         super(context);
         mCamera = camera;
         params = mCamera.getParameters();
@@ -96,10 +102,15 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
         this.avgText = avgText;
         this.measuring_time = measuring_time;
+        this.graph = graph;
+        graph.getViewport().setXAxisBoundsManual(true);
+        graph.getViewport().setMinX(0);
+        graph.getViewport().setMaxX(5);
         framesCounter = 0;
         isrunning = true;
         isMeasuring = false;
         this.parent = parent;
+        plotRedAvg = new LineGraphSeries<>();
     }
 
     public void surfaceCreated(SurfaceHolder holder) {
@@ -213,7 +224,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             double totalPixels = upperHalfHeight * tempWidth;
             double redAvg = sumR / totalPixels;
 
-            if(redAvg >= 100){
+            if(redAvg >= 80){
                 if(!isMeasuring)isMeasuring = true;
             }else{
                 if(isMeasuring)isMeasuring = false;
@@ -234,11 +245,13 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
                 smoothedAvgs.add(smoothCurrentValue(redAvg,temp));
                 timeStamps.add(timestamp-FirstDelayInSecs);
                 framesCounter++;
+
             }else{
                 redAVGs = new ArrayList<Double>();
                 smoothedAvgs = new ArrayList<Double>();
                 timeStamps = new ArrayList<Double>();
                 framesCounter = 0;
+
             }
 
             mCamera.addCallbackBuffer(data);
@@ -253,6 +266,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             myCameraPreview.setImageBitmap(mBitmap);
 
             if(!isMeasuring){
+                plotRedAvg = new LineGraphSeries<>();
+                graph.removeAllSeries();
                 avgText.setText(light_too_weak);
                 measuring_time.setText("");
                 return;
@@ -262,6 +277,11 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
                 avgText.setText(start_measuring);
                 measuring_time.setText("");
                 return;
+            }
+            plotRedAvg.appendData(new DataPoint(timestamp, redAVGs.get(redAVGs.size()-1)), true, 60, false);
+            if(framesCounter%5 == 0){
+                plotRedAvg.setColor(Color.RED);
+                graph.addSeries(plotRedAvg);
             }
 
             if (timestamp-FirstDelayInSecs >= MEASURE_TIME) {

@@ -1,6 +1,7 @@
 package com.example.android.HeartTracker;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.hardware.Camera;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -12,15 +13,19 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.series.DataPoint;
+import com.jjoe64.graphview.series.LineGraphSeries;
+
 public class MeasuringActivity extends AppCompatActivity {
     Camera mCamera;
     CameraPreview mPreview;
     ImageView convertedImageView;
     LinearLayout layoutForImage;
     FrameLayout preview;
-
     TextView avgText;
     TextView measuring_time;
+    GraphView graph;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -35,8 +40,10 @@ public class MeasuringActivity extends AppCompatActivity {
         // Creates our own camera preview object to  be able to make changes to the previews.
         avgText = findViewById(R.id.avgtext);
         measuring_time = findViewById(R.id.measuring_time);
-        mPreview = new CameraPreview(this, mCamera, convertedImageView,layoutForImage,avgText, measuring_time, this);
+        graph = findViewById(R.id.graph);
+        mPreview = new CameraPreview(this, mCamera, convertedImageView,layoutForImage,avgText, measuring_time, graph, this);
         // Add our camerapreview to this activitys layout.
+
         Button btnStop = findViewById(R.id.btnStop);
         btnStop.setOnClickListener(view -> {
             onPause();

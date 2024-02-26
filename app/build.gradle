@@ -28,4 +28,5 @@ dependencies {
     implementation 'com.jjoe64:graphview:4.2.2'
     implementation 'com.gauravk.audiovisualizer:audiovisualizer:0.9.1'
     implementation 'com.otaliastudios:cameraview:1.6.0'
+    implementation "com.androidplot:androidplot-core:1.5.10"
 }
