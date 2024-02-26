@@ -49,10 +49,10 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     private int framesCounter;
 
     private boolean isrunning;
-    private double samplingFeq;
     private double timestamp;
-
-    private static int MEASURE_TIME = 30;
+    private boolean isMeasuring;
+    private static int MEASURE_TIME = 10;
+    private static String light_too_weak = "Light is too weak!";
 
     public CameraPreview(Context context, Camera camera, ImageView mCameraPreview, LinearLayout layout, TextView avgText, TextView measuring_time) {
         super(context);
@@ -93,7 +93,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         this.measuring_time = measuring_time;
         framesCounter = 0;
         isrunning = true;
-
+        isMeasuring = false;
     }
 
     public void surfaceCreated(SurfaceHolder holder) {
@@ -205,26 +205,34 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
                 }
             }
             double totalPixels = upperHalfHeight * tempWidth;
-
-            //Log.i("pixel-length", String.valueOf(pixels.length));
-            //Log.i("totalpixels", String.valueOf(totalPixels));
-            //Log.i("AverageRedFrame", );
-
             double redAvg = sumR / totalPixels;
-            double timeNow = System.currentTimeMillis();
-            timestamp = (timeNow - startTime) / 1000d;
-            redAVGs.add(redAvg);
-            List<Double> temp;
-            if (smoothedAvgs.size() < 5) {
-                temp = new ArrayList<>(smoothedAvgs); // Take the whole list
-            } else {
-                temp = smoothedAvgs.subList(smoothedAvgs.size() - 5, smoothedAvgs.size());
-            }
-            smoothedAvgs.add(smoothCurrentValue(redAvg,temp));
-            timeStamps.add(timestamp);
-            framesCounter++;
 
-            samplingFeq = Math.ceil(framesCounter / timestamp);
+            if(redAvg >= 100){
+                if(!isMeasuring)isMeasuring = true;
+            }else{
+                if(isMeasuring)isMeasuring = false;
+            }
+
+            if(isMeasuring){
+                double timeNow = System.currentTimeMillis();
+                timestamp = (timeNow - startTime) / 1000d;
+                List<Double> temp;
+                if (smoothedAvgs.size() < 5) {
+                    temp = new ArrayList<>(smoothedAvgs); // Take the whole list
+                } else {
+                    temp = smoothedAvgs.subList(smoothedAvgs.size() - 5, smoothedAvgs.size());
+                }
+                redAVGs.add(redAvg);
+                smoothedAvgs.add(smoothCurrentValue(redAvg,temp));
+                timeStamps.add(timestamp);
+                framesCounter++;
+            }else{
+                redAVGs = new ArrayList<Double>();
+                smoothedAvgs = new ArrayList<Double>();
+                timeStamps = new ArrayList<Double>();
+                startTime = System.currentTimeMillis();
+                framesCounter = 0;
+            }
 
             mCamera.addCallbackBuffer(data);
             mProcessInProgress = false;
@@ -237,43 +245,38 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             mBitmap.setPixels(pixels, 0, height, 0, 0, height, width);
             myCameraPreview.setImageBitmap(mBitmap);
 
-            if (timestamp >= MEASURE_TIME) {
-                double avgDeltaT = 0;
-                for (int i = 0; i < timeStamps.size() - 1; i++) {
-                    avgDeltaT += timeStamps.get(i + 1) - timeStamps.get(i);
-                }
-                avgDeltaT /= (timeStamps.size() - 1);
+            if(!isMeasuring){
+                avgText.setText(light_too_weak);
+                measuring_time.setText("");
+                return;
+            }
 
+            if (timestamp >= MEASURE_TIME) {
+                double avgDeltaT = getAvgDeltaT();
                 double bpm = fft(redAVGs.toArray(new Double[0]), framesCounter, avgDeltaT) * 60;
-                Log.i("BPM", String.valueOf(bpm));
-                avgText.setText(String.valueOf(bpm));
-                isrunning = false;
 
                 //print out data to file
                 StringBuilder s = new StringBuilder();
                 StringBuilder smooth = new StringBuilder();
-
                 for (int i = 0; i < framesCounter; i++) {
                     s.append(redAVGs.get(i) + " " + timeStamps.get(i) + "\n");
                     smooth.append(smoothedAvgs.get(i) + " " + timeStamps.get(i) + "\n");
                 }
                 saveAsText("average_red_values.txt", s.toString());
                 //saveAsText("smoothed_average_red_values.txt", smooth.toString());
+
+                avgText.setText(String.valueOf(bpm));
+                isrunning = false;
             } else if (framesCounter % 60 == 0) {
                 int peaks = numberOfPeaks(smoothedAvgs, 0.01);
                 double bpmEstimate = (peaks / timestamp) * 60;
                 avgText.setText(String.valueOf(bpmEstimate));
                 measuring_time.setText(String.valueOf(timeStamps.get(timeStamps.size() - 1)));
 
-
-            } else {
-                /*
-                    avgText.setText(String.valueOf(redAVGs.get(redAVGs.size() - 1)));
-                    */
-
-                measuring_time.setText(String.valueOf(timeStamps.get(timeStamps.size() - 1)));
-
             }
+
+            if(avgText.getText().toString().compareTo(light_too_weak) == 0)avgText.setText("");
+            measuring_time.setText(String.valueOf(timeStamps.get(timeStamps.size() - 1)));
         }
         //bandpass filter
         //double filteredRedAvg = bandpassFilter.filter(redAvg);
@@ -378,22 +381,35 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         fft.realForward(output);
         StringBuilder log = new StringBuilder();
 
-        for (int i = 0; i < 2 * size; i++) {
-            output[i] = Math.pow(Math.abs(output[i]), 2);
+        for(int i = 0; i < 2 * size; i+=2) {
+            double a = output[i];
+            double b = output[i+1];
 
-            log.append(output[i]);
+            double pds = Math.pow(a,2) + Math.pow(b,2);
+
+            log.append(pds);
             log.append("\n");
 
-            double curr_freq = (double) i / ((double) avgDeltaT * ((2 * size) - 1));
+            double curr_freq = (double) i / (avgDeltaT * ((2 * size) - 1));
+
             if (curr_freq >= 0.75 && curr_freq <= 10 / 3d) {
-                if (max_amp < output[i]) {
-                    max_amp = output[i];
+                if(max_amp < pds){
+                    max_amp = pds;
                     max_freq = curr_freq;
                 }
             }
         }
         saveAsText("fft.txt", log.toString());
         return max_freq;
+    }
+
+    private double getAvgDeltaT(){
+        double avgDeltaT = 0;
+        for (int i = 0; i < timeStamps.size() - 1; i++) {
+            avgDeltaT += timeStamps.get(i + 1) - timeStamps.get(i);
+        }
+        avgDeltaT /= (timeStamps.size() - 1);
+        return avgDeltaT;
     }
 
     public int numberOfPeaks(List<Double> signal, double threshold) {
