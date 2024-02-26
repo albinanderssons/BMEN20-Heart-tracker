@@ -35,7 +35,7 @@ public class MeasuringActivity extends AppCompatActivity {
         // Creates our own camera preview object to  be able to make changes to the previews.
         avgText = findViewById(R.id.avgtext);
         measuring_time = findViewById(R.id.measuring_time);
-        mPreview = new CameraPreview(this, mCamera, convertedImageView,layoutForImage,avgText, measuring_time);
+        mPreview = new CameraPreview(this, mCamera, convertedImageView,layoutForImage,avgText, measuring_time, this);
         // Add our camerapreview to this activitys layout.
         Button btnStop = findViewById(R.id.btnStop);
         btnStop.setOnClickListener(view -> {

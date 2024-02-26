@@ -1,11 +1,13 @@
 package com.example.android.HeartTracker;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.ImageFormat;
 import android.hardware.Camera;
 import android.os.AsyncTask;
 import android.os.Environment;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -55,8 +57,9 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     private static int FirstDelayInSecs = 2;
     private static String light_too_weak = "Light is too weak!";
     private static String start_measuring = "Starting Measurement...";
+    private AppCompatActivity parent;
 
-    public CameraPreview(Context context, Camera camera, ImageView mCameraPreview, LinearLayout layout, TextView avgText, TextView measuring_time) {
+    public CameraPreview(Context context, Camera camera, ImageView mCameraPreview, LinearLayout layout, TextView avgText, TextView measuring_time, AppCompatActivity parent) {
         super(context);
         mCamera = camera;
         params = mCamera.getParameters();
@@ -96,6 +99,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         framesCounter = 0;
         isrunning = true;
         isMeasuring = false;
+        this.parent = parent;
     }
 
     public void surfaceCreated(SurfaceHolder holder) {
@@ -274,12 +278,15 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
                 saveAsText("average_red_values.txt", s.toString());
                 //saveAsText("smoothed_average_red_values.txt", smooth.toString());
 
-                avgText.setText(String.valueOf(bpm));
                 isrunning = false;
+                Intent intent = new Intent(parent, ResultActivity.class);
+                intent.putExtra("BPM",String.format("%.4f", bpm));
+                parent.finish();
+                parent.startActivity(intent);
             } else if (framesCounter % 60 == 0) {
                 int peaks = numberOfPeaks(smoothedAvgs, 0.01);
                 double bpmEstimate = (peaks / timestamp) * 60;
-                avgText.setText(String.valueOf(bpmEstimate));
+                avgText.setText(String.format("%.4f",bpmEstimate));
                 measuring_time.setText(String.format("%.4f", timeStamps.get(timeStamps.size() - 1)));
             }
 
