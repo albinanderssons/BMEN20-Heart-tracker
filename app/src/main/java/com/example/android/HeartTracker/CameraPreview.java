@@ -25,7 +25,7 @@ import java.util.List;
 import static android.content.ContentValues.TAG;
 
 /** A basic Camera preview class */
-public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback, Camera.PreviewCallback{
+public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback, Camera.PreviewCallback {
     private SurfaceHolder mHolder;
     private Camera mCamera;
     private int imageFormat;
@@ -33,12 +33,13 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     private Bitmap mBitmap = null;
     private ImageView myCameraPreview;
     private int[] pixels = null;
-    public int width ,height;
+    public int width, height;
     private Camera.Parameters params;
 
     private long startTime;
 
     private List<Double> redAVGs;
+    private List<Double> smoothedAvgs;
     private List<Double> timeStamps;
 
     private TextView avgText;
@@ -62,10 +63,9 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         int minWidth = Integer.MAX_VALUE;
         int minHeight = Integer.MAX_VALUE;
 
-        for (Camera.Size previewSize: mCamera.getParameters().getSupportedPreviewSizes())
-        {
-            if(previewSize.width < minWidth || previewSize.height < minHeight) {
-                minWidth= previewSize.width;
+        for (Camera.Size previewSize : mCamera.getParameters().getSupportedPreviewSizes()) {
+            if (previewSize.width < minWidth || previewSize.height < minHeight) {
+                minWidth = previewSize.width;
                 minHeight = previewSize.height;
             }
         }
@@ -85,6 +85,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         layout.addView(myCameraPreview);
 
         redAVGs = new ArrayList<Double>();
+        smoothedAvgs = new ArrayList<Double>();
         timeStamps = new ArrayList<Double>();
         startTime = System.currentTimeMillis();
 
@@ -92,6 +93,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         this.measuring_time = measuring_time;
         framesCounter = 0;
         isrunning = true;
+
     }
 
     public void surfaceCreated(SurfaceHolder holder) {
@@ -110,41 +112,42 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     }
 
     /* If the application is allowed to rotate, here is where you would change the camera preview
-    * size and other formatting changes.*/
+     * size and other formatting changes.*/
     public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {
-        if (mHolder.getSurface() == null){
+        if (mHolder.getSurface() == null) {
             return;
         }
         try {
             mCamera.stopPreview();
-        } catch (Exception e){
+        } catch (Exception e) {
         }
         try {
             mCamera.setPreviewDisplay(mHolder);
             mCamera.startPreview();
 
-        } catch (Exception e){
+        } catch (Exception e) {
             Log.d(TAG, "Error starting camera preview: " + e.getMessage());
         }
     }
+
     /*This method is overridden from the camera class to do stuff on every frame that is taken
-    * from the camera, in the form of the byte[] bytes array.
-    *
-    * */
+     * from the camera, in the form of the byte[] bytes array.
+     *
+     * */
     @Override
     public void onPreviewFrame(byte[] bytes, Camera camera) {
-        if (imageFormat == ImageFormat.NV21 && isrunning){
-            if(mProcessInProgress){
+        if (imageFormat == ImageFormat.NV21 && isrunning) {
+            if (mProcessInProgress) {
                 mCamera.addCallbackBuffer(bytes);
             }
-            if (bytes == null){
+            if (bytes == null) {
                 return;
             }
             mCamera.addCallbackBuffer(bytes);
             /*
-            * Here we rotate the byte array (because of some wierd feature in my phone at least)
-            * if your picture is horizontal, delete the rotation of the byte array.
-            * */
+             * Here we rotate the byte array (because of some wierd feature in my phone at least)
+             * if your picture is horizontal, delete the rotation of the byte array.
+             * */
             bytes = rotateYUV420Degree90(bytes, width, height);
 
             if (mBitmap == null) {
@@ -161,11 +164,13 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
         }
     }
+
     /* This class is run on another thread in the background, and when it's done with the decoding,
-    * onPostExectue is called to set the new pixel array to the image we have.
-    * In doInBackground you can change the values of the RGB pixel array to correspond to your
-    * preferred colors. */
+     * onPostExectue is called to set the new pixel array to the image we have.
+     * In doInBackground you can change the values of the RGB pixel array to correspond to your
+     * preferred colors. */
     private class ProcessPreviewDataTask extends AsyncTask<byte[], Void, Boolean> {
+        BandpassFilter bandpassFilter = new BandpassFilter(5);
 
         @Override
         protected Boolean doInBackground(byte[]... datas) {
@@ -180,7 +185,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
             int sumR = 0;
 
-            int r,g,b;
+            int r, g, b;
 
             //Testing only considering upper half
             int upperHalfHeight = tempHeight / 2;
@@ -205,15 +210,21 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             //Log.i("totalpixels", String.valueOf(totalPixels));
             //Log.i("AverageRedFrame", );
 
-            double redAvg = sumR/totalPixels;
+            double redAvg = sumR / totalPixels;
             double timeNow = System.currentTimeMillis();
-            timestamp = (timeNow-startTime)/1000d;
-
+            timestamp = (timeNow - startTime) / 1000d;
             redAVGs.add(redAvg);
+            List<Double> temp;
+            if (smoothedAvgs.size() < 5) {
+                temp = new ArrayList<>(smoothedAvgs); // Take the whole list
+            } else {
+                temp = smoothedAvgs.subList(smoothedAvgs.size() - 5, smoothedAvgs.size());
+            }
+            smoothedAvgs.add(smoothCurrentValue(redAvg,temp));
             timeStamps.add(timestamp);
             framesCounter++;
 
-            samplingFeq = Math.ceil(framesCounter/timestamp);
+            samplingFeq = Math.ceil(framesCounter / timestamp);
 
             mCamera.addCallbackBuffer(data);
             mProcessInProgress = false;
@@ -221,72 +232,84 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         }
 
         @Override
-        protected void onPostExecute(Boolean result){
+        protected void onPostExecute(Boolean result) {
             myCameraPreview.invalidate();
-            mBitmap.setPixels(pixels, 0, height,0, 0, height, width);
+            mBitmap.setPixels(pixels, 0, height, 0, 0, height, width);
             myCameraPreview.setImageBitmap(mBitmap);
 
-            if(timestamp >= MEASURE_TIME){
+            if (timestamp >= MEASURE_TIME) {
                 double avgDeltaT = 0;
-                for(int i = 0; i < timeStamps.size()-1;i++){
-                    avgDeltaT += timeStamps.get(i+1)-timeStamps.get(i);
+                for (int i = 0; i < timeStamps.size() - 1; i++) {
+                    avgDeltaT += timeStamps.get(i + 1) - timeStamps.get(i);
                 }
-                avgDeltaT/= (timeStamps.size()-1);
+                avgDeltaT /= (timeStamps.size() - 1);
 
-                double bpm = fft(redAVGs.toArray(new Double[0]),framesCounter,avgDeltaT)*60;
+                double bpm = fft(redAVGs.toArray(new Double[0]), framesCounter, avgDeltaT) * 60;
                 Log.i("BPM", String.valueOf(bpm));
                 avgText.setText(String.valueOf(bpm));
                 isrunning = false;
 
                 //print out data to file
                 StringBuilder s = new StringBuilder();
-                for(int i = 0; i < framesCounter; i++){
+                StringBuilder smooth = new StringBuilder();
+
+                for (int i = 0; i < framesCounter; i++) {
                     s.append(redAVGs.get(i) + " " + timeStamps.get(i) + "\n");
+                    smooth.append(smoothedAvgs.get(i) + " " + timeStamps.get(i) + "\n");
                 }
                 saveAsText("average_red_values.txt", s.toString());
-            }else{
-                avgText.setText(String.valueOf(redAVGs.get(redAVGs.size() - 1)));
-                measuring_time.setText(String.valueOf(timeStamps.get(timeStamps.size()-1)));
+                //saveAsText("smoothed_average_red_values.txt", smooth.toString());
+            } else if (framesCounter % 60 == 0) {
+                int peaks = numberOfPeaks(smoothedAvgs, 0.01);
+                double bpmEstimate = (peaks / timestamp) * 60;
+                avgText.setText(String.valueOf(bpmEstimate));
+                measuring_time.setText(String.valueOf(timeStamps.get(timeStamps.size() - 1)));
+
+
+            } else {
+                /*
+                    avgText.setText(String.valueOf(redAVGs.get(redAVGs.size() - 1)));
+                    */
+
+                measuring_time.setText(String.valueOf(timeStamps.get(timeStamps.size() - 1)));
+
             }
-            //bandpass filter
-            //double filteredRedAvg = bandpassFilter.filter(redAvg);
         }
+        //bandpass filter
+        //double filteredRedAvg = bandpassFilter.filter(redAvg);
     }
 
+
     /*Decoding and rotating methods from github
-    * This method rotates the NV21 image (standard image that comes from the preview)
-    * since this is a byte array, it must be switched correctly to match the pixels*/
-    private byte[] rotateYUV420Degree90(byte[] data, int imageWidth, int imageHeight)
-    {
-        byte [] yuv = new byte[imageWidth*imageHeight*3/2];
+     * This method rotates the NV21 image (standard image that comes from the preview)
+     * since this is a byte array, it must be switched correctly to match the pixels*/
+    private byte[] rotateYUV420Degree90(byte[] data, int imageWidth, int imageHeight) {
+        byte[] yuv = new byte[imageWidth * imageHeight * 3 / 2];
         // Rotate the Y luma
         int i = 0;
-        for(int x = 0;x < imageWidth;x++)
-        {
-            for(int y = imageHeight-1;y >= 0;y--)
-            {
-                yuv[i] = data[y*imageWidth+x];
+        for (int x = 0; x < imageWidth; x++) {
+            for (int y = imageHeight - 1; y >= 0; y--) {
+                yuv[i] = data[y * imageWidth + x];
                 i++;
             }
         }
         // Rotate the U and V color components
-        i = imageWidth*imageHeight*3/2-1;
-        for(int x = imageWidth-1;x > 0;x=x-2)
-        {
-            for(int y = 0;y < imageHeight/2;y++)
-            {
-                yuv[i] = data[(imageWidth*imageHeight)+(y*imageWidth)+x];
+        i = imageWidth * imageHeight * 3 / 2 - 1;
+        for (int x = imageWidth - 1; x > 0; x = x - 2) {
+            for (int y = 0; y < imageHeight / 2; y++) {
+                yuv[i] = data[(imageWidth * imageHeight) + (y * imageWidth) + x];
                 i--;
-                yuv[i] = data[(imageWidth*imageHeight)+(y*imageWidth)+(x-1)];
+                yuv[i] = data[(imageWidth * imageHeight) + (y * imageWidth) + (x - 1)];
                 i--;
             }
         }
         return yuv;
     }
+
     /* Decodes the image from the NV21 format into an RGB-array with integers.
-    * Since the NV21 array is made out of bytes, and one pixel is made out of 1.5 bytes, this is
-    * quite hard to understand. If you want more information on this you can read about it on
-    * */
+     * Since the NV21 array is made out of bytes, and one pixel is made out of 1.5 bytes, this is
+     * quite hard to understand. If you want more information on this you can read about it on
+     * */
     public int[] decodeYUV420SP(byte[] yuv, int width, int height) {
 
         final int frameSize = width * height;
@@ -329,7 +352,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         File file = new File(Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_DOWNLOADS), fileName);
 
-        try (FileWriter writer = new FileWriter(file,false);
+        try (FileWriter writer = new FileWriter(file, false);
              BufferedWriter bw = new BufferedWriter(writer);
              PrintWriter out = new PrintWriter(bw)) {
 
@@ -344,26 +367,26 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         }
     }
 
-    private double fft(Double[] input, int size, double avgDeltaT){
-        double[] output = new double[2*size];
+    private double fft(Double[] input, int size, double avgDeltaT) {
+        double[] output = new double[2 * size];
         double max_amp = 0;
         double max_freq = 0;
 
-        for(int i = 0; i < size; i++)output[i] = input[i];
+        for (int i = 0; i < size; i++) output[i] = input[i];
 
         DoubleFft1d fft = new DoubleFft1d(size);
         fft.realForward(output);
         StringBuilder log = new StringBuilder();
 
-        for(int i = 0; i < 2 * size; i++) {
-            output[i] = Math.pow(Math.abs(output[i]),2);
+        for (int i = 0; i < 2 * size; i++) {
+            output[i] = Math.pow(Math.abs(output[i]), 2);
 
             log.append(output[i]);
             log.append("\n");
 
-            double curr_freq = (double) i / ((double) avgDeltaT * ((2*size) -1 ));
-            if(curr_freq >= 0.75 && curr_freq <= 10/3d){
-                if(max_amp < output[i]){
+            double curr_freq = (double) i / ((double) avgDeltaT * ((2 * size) - 1));
+            if (curr_freq >= 0.75 && curr_freq <= 10 / 3d) {
+                if (max_amp < output[i]) {
                     max_amp = output[i];
                     max_freq = curr_freq;
                 }
@@ -372,4 +395,36 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         saveAsText("fft.txt", log.toString());
         return max_freq;
     }
+
+    public int numberOfPeaks(List<Double> signal, double threshold) {
+        int numPeaks = 0;
+        for (int i = 1; i < signal.size() - 1; i++) {
+            // Check if the difference between the current point and its neighbor is larger than the threshold
+            if (Math.abs(signal.get(i)- signal.get(i - 1)) >= threshold && Math.abs(signal.get(i) - signal.get(i+1)) >= threshold) {
+                if (signal.get(i) > signal.get(i - 1) && signal.get(i) > signal.get(i + 1)) {
+                    numPeaks++;
+                }
+            }
+        }
+        return numPeaks;
+    }
+
+    public double smoothCurrentValue(double current, List<Double> previousValues) {
+        // Apply exponential moving average
+        double smoothedValue = current;
+
+        if (previousValues.isEmpty()) {
+            return current;
+        }
+        double smoothedSum = current;
+        int windowSize = previousValues.size()+1;
+
+        for(Double v : previousValues){
+            smoothedSum+=v;
+        }
+        smoothedValue = smoothedSum/windowSize;
+
+        return smoothedValue;
+    }
+
 }
