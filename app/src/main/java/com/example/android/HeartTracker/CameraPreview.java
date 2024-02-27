@@ -105,7 +105,9 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         this.graph = graph;
         graph.getViewport().setXAxisBoundsManual(true);
         graph.getViewport().setMinX(0);
-        graph.getViewport().setMaxX(5);
+        graph.getViewport().setMaxX(2);
+        graph.getGridLabelRenderer().setHorizontalLabelsVisible(false);
+
         framesCounter = 0;
         isrunning = true;
         isMeasuring = false;
@@ -278,8 +280,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
                 measuring_time.setText("");
                 return;
             }
-            plotRedAvg.appendData(new DataPoint(timestamp, redAVGs.get(redAVGs.size()-1)), true, 60, false);
-            if(framesCounter%5 == 0){
+            plotRedAvg.appendData(new DataPoint(timestamp, redAVGs.get(redAVGs.size()-1)), true, 40, false);
+            if(framesCounter%10 == 0){
                 plotRedAvg.setColor(Color.RED);
                 graph.addSeries(plotRedAvg);
             }

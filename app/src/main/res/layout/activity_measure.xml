@@ -36,9 +36,9 @@
 
     <com.jjoe64.graphview.GraphView
         android:id="@+id/graph"
-        android:layout_width="289dp"
-        android:layout_height="201dp"
-        android:layout_marginStart="10dp"
+        android:layout_width="261dp"
+        android:layout_height="210dp"
+        android:layout_marginStart="30dp"
         android:layout_marginTop="80dp"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
