@@ -1,4 +1,10 @@
 <resources>
     <string name="app_name">HeartTracker</string>
     <string name="measureButton">Start Measuring</string>
+    <string name="stopButton">Stop Measuring</string>
+    <string name="header">Heart Tracker</string>
+    <string name="yourheartrate">Your heart rate is</string>
+    <string name="bpm"> bpm</string>
+    <string name="measuringbpm">Measuring..</string>
+    <string name="remaining"> Remaining time </string>
 </resources>

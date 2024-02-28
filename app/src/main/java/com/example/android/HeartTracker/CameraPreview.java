@@ -28,6 +28,7 @@ import java.util.List;
 import static android.content.ContentValues.TAG;
 
 import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.GridLabelRenderer;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 
@@ -61,7 +62,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     private boolean isMeasuring;
     private static int MEASURE_TIME = 15;
     private static int FirstDelayInSecs = 2;
-    private static String light_too_weak = "Light is too weak!";
+    private static String light_too_weak = "Hold your finger steady";
     private static String start_measuring = "Starting Measurement...";
     private AppCompatActivity parent;
 
@@ -107,6 +108,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         graph.getViewport().setMinX(0);
         graph.getViewport().setMaxX(2);
         graph.getGridLabelRenderer().setHorizontalLabelsVisible(false);
+        graph.getGridLabelRenderer().setVerticalLabelsVisible(false);
+        graph.getGridLabelRenderer().setGridStyle(GridLabelRenderer.GridStyle.NONE);
 
         framesCounter = 0;
         isrunning = true;
@@ -282,7 +285,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             }
             plotRedAvg.appendData(new DataPoint(timestamp, redAVGs.get(redAVGs.size()-1)), true, 40, false);
             if(framesCounter%10 == 0){
-                plotRedAvg.setColor(Color.RED);
+                plotRedAvg.setColor(Color.WHITE);
                 graph.addSeries(plotRedAvg);
             }
 
@@ -302,22 +305,23 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
                 isrunning = false;
                 Intent intent = new Intent(parent, ResultActivity.class);
-                intent.putExtra("BPM",String.format("%.4f", bpm));
+                intent.putExtra("BPM",String.format("%.0f", bpm));
                 parent.finish();
                 parent.startActivity(intent);
             } else if (framesCounter % 60 == 0) {
                 int peaks = numberOfPeaks(smoothedAvgs, 0.01);
                 double bpmEstimate = (peaks / timestamp) * 60;
-                avgText.setText(String.format("%.4f",bpmEstimate));
+                avgText.setText(String.format("%.0f",bpmEstimate));
+                avgText.append(" bpm");
                 measuring_time.setText(String.format("%.4f", timeStamps.get(timeStamps.size() - 1)));
             }
 
             String current_avg_text = avgText.getText().toString();
             if(current_avg_text.compareTo(light_too_weak) == 0 || current_avg_text.compareTo(start_measuring) == 0)avgText.setText("");
-            measuring_time.setText(String.format("%.4f", timeStamps.get(timeStamps.size() - 1)));
+            measuring_time.setText(String.format("%.1f", Math.abs(15.0-timeStamps.get(timeStamps.size() - 1))));
+            measuring_time.append(" sec");
         }
-        //bandpass filter
-        //double filteredRedAvg = bandpassFilter.filter(redAvg);
+
     }
 
 
