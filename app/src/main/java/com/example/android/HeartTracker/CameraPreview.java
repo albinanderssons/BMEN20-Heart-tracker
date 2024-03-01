@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.Array;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,7 +48,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     private long startTime;
 
     private List<Double> redAVGs;
-    private List<Double> smoothedAvgs;
+    //private List<Double> smoothedAvgs;
     private List<Double> timeStamps;
 
     private GraphView graph;
@@ -97,7 +98,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         layout.addView(myCameraPreview);
 
         redAVGs = new ArrayList<Double>();
-        smoothedAvgs = new ArrayList<Double>();
+        //smoothedAvgs = new ArrayList<Double>();
         timeStamps = new ArrayList<Double>();
         startTime = System.currentTimeMillis();
 
@@ -240,20 +241,21 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             timestamp = (timeNow - startTime) / 1000d;
 
             if(isMeasuring && timestamp > FirstDelayInSecs){
+                /*
                 List<Double> temp;
                 if (smoothedAvgs.size() < 5) {
                     temp = new ArrayList<>(smoothedAvgs); // Take the whole list
                 } else {
                     temp = smoothedAvgs.subList(smoothedAvgs.size() - 5, smoothedAvgs.size());
-                }
+                }*/
                 redAVGs.add(redAvg);
-                smoothedAvgs.add(smoothCurrentValue(redAvg,temp));
+                //smoothedAvgs.add(smoothCurrentValue(redAvg,temp));
                 timeStamps.add(timestamp-FirstDelayInSecs);
                 framesCounter++;
 
             }else{
                 redAVGs = new ArrayList<Double>();
-                smoothedAvgs = new ArrayList<Double>();
+                //smoothedAvgs = new ArrayList<Double>();
                 timeStamps = new ArrayList<Double>();
                 framesCounter = 0;
 
@@ -298,7 +300,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
                 StringBuilder smooth = new StringBuilder();
                 for (int i = 0; i < framesCounter; i++) {
                     s.append(redAVGs.get(i) + " " + timeStamps.get(i) + "\n");
-                    smooth.append(smoothedAvgs.get(i) + " " + timeStamps.get(i) + "\n");
+                    //smooth.append(smoothedAvgs.get(i) + " " + timeStamps.get(i) + "\n");
                 }
                 saveAsText("average_red_values.txt", s.toString());
                 //saveAsText("smoothed_average_red_values.txt", smooth.toString());
@@ -309,7 +311,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
                 parent.finish();
                 parent.startActivity(intent);
             } else if (framesCounter % 60 == 0) {
-                int peaks = numberOfPeaks(smoothedAvgs, 0.01);
+                int peaks = numberOfPeaks(smooth(redAVGs), 0.0);
                 double bpmEstimate = (peaks / timestamp) * 60;
                 avgText.setText(String.format("%.0f",bpmEstimate));
                 avgText.append(" bpm");
@@ -483,6 +485,25 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         smoothedValue = smoothedSum/windowSize;
 
         return smoothedValue;
+    }
+
+    public List<Double> smooth(List<Double> avgReds) {
+        int windowSize = 7;
+        List<Double> smoothedValues = new ArrayList<>();
+        List<Double> buffer = new ArrayList<>();
+        for (double value : avgReds) {
+            buffer.add(value);
+            if (buffer.size() > windowSize) {
+                buffer.remove(0);
+            }
+            double sum = 0.0;
+            for (double bufferedValue : buffer) {
+                sum += bufferedValue;
+            }
+            double movingAverage = sum / buffer.size();
+            smoothedValues.add(movingAverage);
+        }
+        return smoothedValues;
     }
 
 }
