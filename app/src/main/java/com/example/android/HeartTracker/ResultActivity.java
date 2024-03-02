@@ -17,7 +17,7 @@ public class ResultActivity extends AppCompatActivity {
         Bundle b = getIntent().getExtras();
         if(b!=null){
             String bpm = (String) b.get("BPM");
-            resultView.setText(bpm);
+            resultView.setText(String.format("%s bpm",bpm));
         }
 
         homeButton.setOnClickListener((view) -> {

@@ -2,36 +2,40 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingLeft="16dp"
-    android:paddingRight="16dp"
-    android:orientation="vertical"
+    android:layout_gravity="center"
     android:background="@color/darkred"
-    android:gravity="center">
+    android:gravity="center"
+    android:orientation="vertical"
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp">
 
     <ImageView
         android:id="@+id/vectorImageView"
         android:layout_width="202dp"
         android:layout_height="143dp"
+        android:layout_gravity="center"
         android:src="@drawable/baseline_monitor_heart_24" />
 
     <TextView
         android:id="@+id/textView"
         android:layout_width="match_parent"
         android:layout_height="94dp"
-        android:textColor="@color/white"
-        android:textSize="28sp"
-        android:gravity="center"
+        android:layout_gravity="center"
         android:fontFamily="sans-serif-black"
-        android:text="@string/header" />
+        android:gravity="center"
+        android:text="@string/header"
+        android:textColor="@color/white"
+        android:textSize="28sp" />
 
     <Button
         android:id="@+id/mVideoButton"
         android:layout_width="225dp"
         android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
         android:padding="18sp"
-        android:textSize="16sp"
-        android:text="@string/measureButton" />
-
+        android:text="@string/measureButton"
+        android:textSize="16sp" />
 
 
 </LinearLayout>
