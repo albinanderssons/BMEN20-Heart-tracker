@@ -117,7 +117,6 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         isMeasuring = false;
         this.parent = parent;
         plotRedAvg = new LineGraphSeries<>();
-        plotRedAvg.setColor(Color.WHITE);
     }
 
     public void surfaceCreated(SurfaceHolder holder) {
@@ -275,7 +274,11 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
                 return;
             }
             plotRedAvg.appendData(new DataPoint(timestamp, redAVGs.get(redAVGs.size()-1)), true, 40, false);
-            if(framesCounter%10 == 0)graph.addSeries(plotRedAvg);
+            if(framesCounter%10 == 0)
+            {
+                plotRedAvg.setColor(Color.WHITE);
+                graph.addSeries(plotRedAvg);
+            }
 
             if (timestamp-FirstDelayInSecs >= MEASURE_TIME) {
                 double avgDeltaT = getAvgDeltaT();
