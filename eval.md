@@ -36,18 +36,18 @@
 - ECG fft estimation: 68.5747
 - diff: 0.55202
 
-
+[![person2-3](/figures/person2-3.svg)]
 
 ## Person 3:
 
-App fft estimation: 67.8778
-ECG fft estimation: 71.2545
-diff: 3.3766
+- App fft estimation: 67.8778
+- ECG fft estimation: 71.2545
+- diff: 3.3766
 
-App fft estimation: 63.8723
-ECG fft estimation: 68.0045
-diff: 4.1323
+- App fft estimation: 63.8723
+- ECG fft estimation: 68.0045
+- diff: 4.1323
 
-App fft estimation: 67.9592
-ECG fft estimation: 66.3193
-diff: 1.6399
+- App fft estimation: 67.9592
+- ECG fft estimation: 66.3193
+- diff: 1.6399
