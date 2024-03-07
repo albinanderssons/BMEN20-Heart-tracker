@@ -1,7 +1,6 @@
 package com.example.android.HeartTracker;
 
 import android.content.Intent;
-import android.graphics.Color;
 import android.hardware.Camera;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -12,10 +11,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-
 import com.jjoe64.graphview.GraphView;
-import com.jjoe64.graphview.series.DataPoint;
-import com.jjoe64.graphview.series.LineGraphSeries;
 
 public class MeasuringActivity extends AppCompatActivity {
     Camera mCamera;
@@ -42,14 +38,14 @@ public class MeasuringActivity extends AppCompatActivity {
         measuring_time = findViewById(R.id.measuring_time);
         graph = findViewById(R.id.graph);
         mPreview = new CameraPreview(this, mCamera, convertedImageView,layoutForImage,avgText, measuring_time, graph, this);
-        // Add our camerapreview to this activitys layout.
+        // Add our camera preview to this activities layout.
 
         Button btnStop = findViewById(R.id.btnStop);
         btnStop.setOnClickListener(view -> {
             onPause();
             stopMeasurement();
         });
-        preview = (FrameLayout) findViewById(R.id.camera_preview);
+        preview = findViewById(R.id.camera_preview);
         preview.addView(mPreview);
         preview.setMinimumWidth(mPreview.width);
         preview.setMinimumHeight(mPreview.height);
@@ -64,8 +60,6 @@ public class MeasuringActivity extends AppCompatActivity {
         Intent intent = new Intent(MeasuringActivity.this, MainActivity.class);
         startActivity(intent);
     }
-
-
 
     // This is connected to the lifecycle of the activity
     @Override
@@ -85,12 +79,6 @@ public class MeasuringActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        /*
-        mCamera = getCameraInstance();
-        mPreview = new CameraPreview(this, mCamera, convertedImageView,layoutForImage);
-        preview.addView(mPreview);
-        preview.setVisibility(View.INVISIBLE);
-        */
     }
 
     /** A safe way to get an instance of the Camera object. */

@@ -16,7 +16,6 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -25,9 +24,7 @@ import java.io.PrintWriter;
 import java.sql.Array;
 import java.util.ArrayList;
 import java.util.List;
-
 import static android.content.ContentValues.TAG;
-
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.GridLabelRenderer;
 import com.jjoe64.graphview.series.DataPoint;
@@ -193,7 +190,6 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
      * In doInBackground you can change the values of the RGB pixel array to correspond to your
      * preferred colors. */
     private class ProcessPreviewDataTask extends AsyncTask<byte[], Void, Boolean> {
-        BandpassFilter bandpassFilter = new BandpassFilter(5);
 
         @Override
         protected Boolean doInBackground(byte[]... datas) {
@@ -284,16 +280,6 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
                 double avgDeltaT = getAvgDeltaT();
                 double bpm = fft(redAVGs.toArray(new Double[0]), framesCounter, avgDeltaT) * 60;
 
-                //print out data to file
-                StringBuilder s = new StringBuilder();
-                StringBuilder smooth = new StringBuilder();
-                for (int i = 0; i < framesCounter; i++) {
-                    s.append(redAVGs.get(i) + " " + timeStamps.get(i) + "\n");
-                    //smooth.append(smoothedAvgs.get(i) + " " + timeStamps.get(i) + "\n");
-                }
-                saveAsText("average_red_values.txt", s.toString());
-                //saveAsText("smoothed_average_red_values.txt", smooth.toString());
-
                 isrunning = false;
                 Intent intent = new Intent(parent, ResultActivity.class);
                 intent.putExtra("BPM",String.format("%.0f", bpm));
@@ -378,30 +364,6 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         return rgb;
     }
 
-    private void saveAsText(String fileName, String averageRedValue) {
-        String state = Environment.getExternalStorageState();
-        if (!Environment.MEDIA_MOUNTED.equals(state)) {
-            // External storage is not available
-            return;
-        }
-
-        File file = new File(Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_DOWNLOADS), fileName);
-
-        try (FileWriter writer = new FileWriter(file, false);
-             BufferedWriter bw = new BufferedWriter(writer);
-             PrintWriter out = new PrintWriter(bw)) {
-
-            // Write the average red value as a string
-            out.println(averageRedValue);
-
-            Log.i("File saved", "Now");
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            Log.e("Error saving file", e.getMessage());
-        }
-    }
 
     private double fft(Double[] input, int size, double avgDeltaT) {
         double[] output = new double[2 * size];
@@ -412,17 +374,12 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
         DoubleFft1d fft = new DoubleFft1d(size);
         fft.realForward(output);
-        StringBuilder log = new StringBuilder();
 
         for(int i = 0; i < 2 * size; i+=2) {
             double a = output[i];
             double b = output[i+1];
 
             double pds = Math.pow(a,2) + Math.pow(b,2);
-
-            log.append(pds);
-            log.append("\n");
-
             double curr_freq = (double) i / (avgDeltaT * ((2 * size) - 1));
 
             if (curr_freq >= 0.75 && curr_freq <= 10 / 3d) {
@@ -432,7 +389,6 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
                 }
             }
         }
-        saveAsText("fft.txt", log.toString());
         return max_freq;
     }
 

@@ -14,6 +14,7 @@
         android:layout_width="202dp"
         android:layout_height="143dp"
         android:layout_gravity="center"
+        android:contentDescription="@string/logo"
         android:src="@drawable/baseline_monitor_heart_24" />
 
     <TextView

@@ -7,4 +7,7 @@
     <string name="bpm"> bpm</string>
     <string name="measuringbpm">Measuring..</string>
     <string name="remaining"> Remaining time </string>
+    <string name="logo">Logo</string>
+    <string name="home_button">Home</string>
+    <string name="measure_again_button">Measure Again</string>
 </resources>
